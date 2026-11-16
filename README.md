@@ -2,23 +2,58 @@
 
 [**3D portfolio source ↗**](docs/index.html) · [Live portfolio](https://mohamedbreed192-droid.github.io/mohamedbreed192-droid/)
 
-
-
 **Computer Science student · Building toward a career in software engineering**
 
 I'm studying Computer Science at Canadian University Dubai, with career interests in artificial intelligence and cloud computing. I want to build software that solves useful problems and is clear enough for other people to understand, test, and maintain.
 
 ## Featured Projects
 
-[IncidentLens](#incidentlens) · [AccessLedger](#accessledger) · [QueueBridge](#queuebridge) · [Aircraft Engine Predictive Maintenance](#aircraft-engine-predictive-maintenance)
+Four student projects in software engineering and machine learning. Select a preview for the project description, or open its source code.
 
-Four student projects spanning software engineering and machine learning. The three applications use **synthetic data**; the aircraft engine graduation project uses NASA C-MAPSS simulated sensor data. Screenshots show the application interfaces and recorded demo activity. These projects are research and learning work.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3><a href="#incidentlens">IncidentLens</a></h3>
+      <a href="#incidentlens"><img src="assets/projects/incidentlens-investigation.png" alt="IncidentLens — Evidence-based log investigation" width="360"></a>
+      <p>Evidence-based log investigation</p>
+      <p><sub>Python · FastAPI · PostgreSQL</sub></p>
+      <p><a href="#incidentlens">Description</a> · <a href="https://github.com/mohamedbreed192-droid/incidentlens">Source code ↗</a></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3><a href="#accessledger">AccessLedger</a></h3>
+      <a href="#accessledger"><img src="assets/projects/accessledger-access-review.png" alt="AccessLedger — Explainable employee access reviews" width="360"></a>
+      <p>Explainable employee access reviews</p>
+      <p><sub>Python · FastAPI · PostgreSQL</sub></p>
+      <p><a href="#accessledger">Description</a> · <a href="https://github.com/mohamedbreed192-droid/accessledger">Source code ↗</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3><a href="#queuebridge">QueueBridge</a></h3>
+      <a href="#queuebridge"><img src="assets/projects/queuebridge-order-ledger.png" alt="QueueBridge — Asynchronous orders and recovery" width="360"></a>
+      <p>Asynchronous orders and recovery</p>
+      <p><sub>Java · Spring Boot · RabbitMQ</sub></p>
+      <p><a href="#queuebridge">Description</a> · <a href="https://github.com/mohamedbreed192-droid/queuebridge">Source code ↗</a></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3><a href="#aircraft-engine-predictive-maintenance">Aircraft Engine Predictive Maintenance</a></h3>
+      <a href="#aircraft-engine-predictive-maintenance"><img src="assets/projects/aircraft-engine-rul.png" alt="Aircraft Engine Predictive Maintenance — Graduation project · Phase 1 RUL baseline" width="360"></a>
+      <p>Graduation project · Phase 1 RUL baseline</p>
+      <p><sub>Python · scikit-learn · NASA C-MAPSS</sub></p>
+      <p><a href="#aircraft-engine-predictive-maintenance">Description</a> · <a href="https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance">Source code ↗</a></p>
+    </td>
+  </tr>
+</table>
+
+The three applications use synthetic data; the aircraft engine baseline uses NASA simulated sensor data. These are student research and learning projects.
+
+## Project descriptions
+
+<a id="incidentlens"></a>
 
 ### [IncidentLens](https://github.com/mohamedbreed192-droid/incidentlens)
 
 Investigate application log failures with **inspectable evidence**. IncidentLens extracts log-line signals, retrieves permitted runbook sections, and presents a suggested investigation direction for human review.
-
-[![IncidentLens investigation showing observed log evidence, versioned runbook citations, human review, and activity history](assets/projects/incidentlens-investigation.png)](assets/projects/incidentlens-investigation.png)
 
 **Technology:** Python · FastAPI · PostgreSQL · SQLAlchemy · Alembic · HTML/CSS/JavaScript
 
@@ -39,11 +74,11 @@ The baseline covers three failure categories with English lexical rules. Negatio
 
 ---
 
+<a id="accessledger"></a>
+
 ### [AccessLedger](https://github.com/mohamedbreed192-droid/accessledger)
 
 Review employee access with **explainable findings and accountable decisions**. AccessLedger validates CSV imports, snapshots review campaigns, and lets assigned reviewers record retain/revoke recommendations with a rationale.
-
-[![AccessLedger review of a fictional employee's access, showing frozen permission evidence, stale-access and conflicting-permission findings, and a human decision form](assets/projects/accessledger-access-review.png)](assets/projects/accessledger-access-review.png)
 
 **Technology:** Python · FastAPI · PostgreSQL · SQLAlchemy · Alembic · Jinja2
 
@@ -57,11 +92,11 @@ Review employee access with **explainable findings and accountable decisions**. 
 
 ---
 
+<a id="queuebridge"></a>
+
 ### [QueueBridge](https://github.com/mohamedbreed192-droid/queuebridge)
 
 Follow orders through **asynchronous processing and recovery**. QueueBridge accepts synthetic supplier orders, persists order and outbox records in one transaction, and processes RabbitMQ deliveries with a database-backed inbox.
-
-[![QueueBridge operations console with synthetic order submission, database-derived status counts, and an order ledger](assets/projects/queuebridge-order-ledger.png)](assets/projects/queuebridge-order-ledger.png)
 
 **Technology:** Java 21 · Spring Boot · PostgreSQL · RabbitMQ · Flyway · Thymeleaf
 
@@ -76,7 +111,7 @@ Follow orders through **asynchronous processing and recovery**. QueueBridge acce
 <details>
 <summary>Real recovery timeline & delivery limits</summary>
 
-[![QueueBridge order trace showing retry attempts, exhaustion, fulfillment after administrator replay, broker delivery records, and administrative history](assets/projects/queuebridge-recovery-timeline.png)](assets/projects/queuebridge-recovery-timeline.png)
+[View the recovery timeline screenshot](assets/projects/queuebridge-recovery-timeline.png)
 
 Broker confirmation establishes acceptance and routing at publish time; it does not prove fulfillment. Delivery can repeat across crash windows. The local Failure Lab uses explicit synthetic scenarios; it is not evidence of production resilience.
 
@@ -87,11 +122,10 @@ Broker confirmation establishes acceptance and routing at publish time; it does 
 ---
 
 <a id="aircraft-engine-predictive-maintenance"></a>
+
 ### [AI-Powered Predictive Maintenance for Aircraft Engines](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance)
 
 **Computer Science graduation project · Phase 1 — Machine Learning Baseline and Research**
-
-[![Aircraft engine RUL baseline: actual versus predicted remaining useful life for 100 test engines, with RMSE 17.661 cycles](assets/projects/aircraft-engine-rul.png)](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/results/evaluation_notes.md)
 
 Predict aircraft engine **Remaining Useful Life (RUL)** from NASA C-MAPSS FD001 simulated sensor measurements using a Random Forest regressor.
 
