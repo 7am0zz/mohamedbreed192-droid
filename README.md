@@ -12,9 +12,16 @@ Five student projects in software engineering and machine learning. Select a pre
 
 <table>
   <tr>
-    <td colspan="2" valign="top">
+    <td width="50%" valign="top">
+      <h3><a href="#aircraft-engine-predictive-maintenance">Aircraft Engine Predictive Maintenance</a></h3>
+      <a href="#aircraft-engine-predictive-maintenance"><img src="assets/projects/aircraft-engine-rul.png" alt="Aircraft Engine Predictive Maintenance — Graduation project · Phase 1 RUL baseline" width="300"></a>
+      <p>Graduation project · Phase 1 RUL baseline</p>
+      <p><sub>Python · scikit-learn · NASA C-MAPSS</sub></p>
+      <p><a href="#aircraft-engine-predictive-maintenance">Description</a> · <a href="https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance">Source code ↗</a></p>
+    </td>
+    <td width="50%" valign="top">
       <h3><a href="#sentinel-ai">SENTINEL AI — Autonomous Software Reliability Engineer</a></h3>
-      <a href="#sentinel-ai"><img src="assets/projects/sentinel-ai-overview.png" alt="SENTINEL AI — real scanner results on an intentionally vulnerable synthetic fixture" width="760"></a>
+      <a href="#sentinel-ai"><img src="assets/projects/sentinel-ai-overview.png" alt="SENTINEL AI — real scanner results on an intentionally vulnerable synthetic fixture" width="300"></a>
       <p>Inspectable security analysis · Reliability digital twin · Human-reviewed patch proposals</p>
       <p><sub>Next.js · TypeScript · FastAPI · PostgreSQL · Redis · Celery · Semgrep · Bandit</sub></p>
       <p><a href="#sentinel-ai">Description & screenshots</a> · <a href="https://github.com/mohamedbreed192-droid/sentinel-ai">Source code ↗</a></p>
@@ -23,14 +30,14 @@ Five student projects in software engineering and machine learning. Select a pre
   <tr>
     <td width="50%" valign="top">
       <h3><a href="#incidentlens">IncidentLens</a></h3>
-      <a href="#incidentlens"><img src="assets/projects/incidentlens-investigation.png" alt="IncidentLens — Evidence-based log investigation" width="360"></a>
+      <a href="#incidentlens"><img src="assets/projects/incidentlens-investigation.png" alt="IncidentLens — Evidence-based log investigation" width="300"></a>
       <p>Evidence-based log investigation</p>
       <p><sub>Python · FastAPI · PostgreSQL</sub></p>
       <p><a href="#incidentlens">Description</a> · <a href="https://github.com/mohamedbreed192-droid/incidentlens">Source code ↗</a></p>
     </td>
     <td width="50%" valign="top">
       <h3><a href="#accessledger">AccessLedger</a></h3>
-      <a href="#accessledger"><img src="assets/projects/accessledger-access-review.png" alt="AccessLedger — Explainable employee access reviews" width="360"></a>
+      <a href="#accessledger"><img src="assets/projects/accessledger-access-review.png" alt="AccessLedger — Explainable employee access reviews" width="300"></a>
       <p>Explainable employee access reviews</p>
       <p><sub>Python · FastAPI · PostgreSQL</sub></p>
       <p><a href="#accessledger">Description</a> · <a href="https://github.com/mohamedbreed192-droid/accessledger">Source code ↗</a></p>
@@ -39,17 +46,10 @@ Five student projects in software engineering and machine learning. Select a pre
   <tr>
     <td width="50%" valign="top">
       <h3><a href="#queuebridge">QueueBridge</a></h3>
-      <a href="#queuebridge"><img src="assets/projects/queuebridge-order-ledger.png" alt="QueueBridge — Asynchronous orders and recovery" width="360"></a>
+      <a href="#queuebridge"><img src="assets/projects/queuebridge-order-ledger.png" alt="QueueBridge — Asynchronous orders and recovery" width="300"></a>
       <p>Asynchronous orders and recovery</p>
       <p><sub>Java · Spring Boot · RabbitMQ</sub></p>
       <p><a href="#queuebridge">Description</a> · <a href="https://github.com/mohamedbreed192-droid/queuebridge">Source code ↗</a></p>
-    </td>
-    <td width="50%" valign="top">
-      <h3><a href="#aircraft-engine-predictive-maintenance">Aircraft Engine Predictive Maintenance</a></h3>
-      <a href="#aircraft-engine-predictive-maintenance"><img src="assets/projects/aircraft-engine-rul.png" alt="Aircraft Engine Predictive Maintenance — Graduation project · Phase 1 RUL baseline" width="360"></a>
-      <p>Graduation project · Phase 1 RUL baseline</p>
-      <p><sub>Python · scikit-learn · NASA C-MAPSS</sub></p>
-      <p><a href="#aircraft-engine-predictive-maintenance">Description</a> · <a href="https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance">Source code ↗</a></p>
     </td>
   </tr>
 </table>
@@ -57,6 +57,27 @@ Five student projects in software engineering and machine learning. Select a pre
 The application previews use synthetic data; the aircraft engine baseline uses NASA simulated sensor data. These are student research and learning projects.
 
 ## Project descriptions
+
+<a id="aircraft-engine-predictive-maintenance"></a>
+
+### [AI-Powered Predictive Maintenance for Aircraft Engines](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance)
+
+**Computer Science graduation project · Phase 1 — Machine Learning Baseline and Research**
+
+Predict aircraft engine **Remaining Useful Life (RUL)** from NASA C-MAPSS FD001 simulated sensor measurements using a Random Forest regressor.
+
+**Technology:** Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter · GitHub Actions
+
+- Builds RUL targets from complete training lifetimes, caps labels at 125 cycles, and selects sensors using training variance.
+- Evaluates each test engine’s final observed cycle against official RUL labels, also capped at 125 cycles.
+- Records measured **RMSE of 17.661 cycles**, **MAE of 12.351 cycles**, and **R² of 0.806** across 100 test engines.
+- Includes reproducible Python modules, five passing unit tests, dataset hashes, per-engine predictions, and a five-paper literature review.
+
+**Scope:** Phase 1 baseline on simulated data. Notebook and Python module results match. Advanced models, security evaluation, and deployment are planned future work.
+
+[Source code](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance) · [Reproduce the baseline](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance#reproduce) · [Evaluation & results](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/results/evaluation_notes.md) · [Literature review](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/research/literature_review.md)
+
+---
 
 <a id="sentinel-ai"></a>
 
@@ -78,14 +99,14 @@ Inspect public GitHub repositories with **real security scanners and an explaina
 
 **Reliability digital twin — real application screenshot**
 
-[![SENTINEL AI digital twin showing possible impact through static local imports](assets/projects/sentinel-ai-digital-twin.png)](https://github.com/mohamedbreed192-droid/sentinel-ai/blob/main/docs/screenshots/digital-twin.png)
+<a href="assets/projects/sentinel-ai-digital-twin.png"><img src="assets/projects/sentinel-ai-digital-twin.png" alt="SENTINEL AI digital twin showing possible impact through static local imports" width="520"></a>
 
 <details>
 <summary>Security findings and proposed code review screenshots</summary>
 
-![SENTINEL AI findings with source-free evidence](assets/projects/sentinel-ai-security-findings.png)
+<a href="assets/projects/sentinel-ai-security-findings.png"><img src="assets/projects/sentinel-ai-security-findings.png" alt="SENTINEL AI findings with source-free evidence" width="520"></a>
 
-![SENTINEL AI assistant with an unverified patch and generated test template](assets/projects/sentinel-ai-assistant.png)
+<a href="assets/projects/sentinel-ai-assistant.png"><img src="assets/projects/sentinel-ai-assistant.png" alt="SENTINEL AI assistant with an unverified patch and generated test template" width="520"></a>
 
 These captures come from the running application. A scanner finding is a review signal, and a proposed change is not a verified fix.
 
@@ -164,25 +185,6 @@ Broker confirmation establishes acceptance and routing at publish time; it does 
 </details>
 
 ---
-
-<a id="aircraft-engine-predictive-maintenance"></a>
-
-### [AI-Powered Predictive Maintenance for Aircraft Engines](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance)
-
-**Computer Science graduation project · Phase 1 — Machine Learning Baseline and Research**
-
-Predict aircraft engine **Remaining Useful Life (RUL)** from NASA C-MAPSS FD001 simulated sensor measurements using a Random Forest regressor.
-
-**Technology:** Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter · GitHub Actions
-
-- Builds RUL targets from complete training lifetimes, caps labels at 125 cycles, and selects sensors using training variance.
-- Evaluates each test engine’s final observed cycle against official RUL labels, also capped at 125 cycles.
-- Records measured **RMSE of 17.661 cycles**, **MAE of 12.351 cycles**, and **R² of 0.806** across 100 test engines.
-- Includes reproducible Python modules, five passing unit tests, dataset hashes, per-engine predictions, and a five-paper literature review.
-
-**Scope:** Phase 1 baseline on simulated data. Notebook and Python module results match. Advanced models, security evaluation, and deployment are planned future work.
-
-[Source code](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance) · [Reproduce the baseline](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance#reproduce) · [Evaluation & results](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/results/evaluation_notes.md) · [Literature review](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/research/literature_review.md)
 
 ## Technical toolkit
 
