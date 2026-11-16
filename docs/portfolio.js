@@ -1,0 +1,167 @@
+'use strict';
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = matchMedia('(pointer: fine)');
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Keep the page readable when JavaScript or animation APIs are unavailable.
+  const reveals = [...document.querySelectorAll('.reveal')];
+  if ('IntersectionObserver' in window && !reduced.matches) {
+    document.documentElement.classList.add('js-motion');
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+    }), { threshold: 0.08 });
+    reveals.forEach(element => observer.observe(element));
+  }
+  const sections = [...document.querySelectorAll('main section[id]')];
+  const navLinks = [...document.querySelectorAll('.navlinks a')];
+  if ('IntersectionObserver' in window) {
+    const sectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === '#' + entry.target.id) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      }
+    }), { rootMargin: '-15% 0px -55% 0px' });
+    sections.forEach(element => sectionObserver.observe(element));
+  }
+  let scrollFrame = 0;
+  const progress = document.querySelector('.scroll-progress');
+  function updateProgress() {
+    scrollFrame = 0;
+    const distance = document.documentElement.scrollHeight - innerHeight;
+    progress.style.transform = `scaleX(${distance > 0 ? scrollY / distance : 0})`;
+  }
+  addEventListener('scroll', () => { if (!scrollFrame) scrollFrame = requestAnimationFrame(updateProgress); }, { passive: true });
+  updateProgress();
+
+  const projects = [...document.querySelectorAll('.project')];
+  const filters = [...document.querySelectorAll('[data-filter]')];
+  filters.forEach(button => button.addEventListener('click', () => {
+    const filter = button.dataset.filter;
+    filters.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    projects.forEach(project => { project.hidden = filter !== 'all' && project.dataset.category !== filter; });
+    const count = projects.filter(project => !project.hidden).length;
+    document.getElementById('filter-status').textContent = `Showing ${count} ${filter === 'all' ? '' : filter === 'ml' ? 'machine learning ' : 'software '}project${count === 1 ? '' : 's'}`;
+    // Revealed items stay visible when category changes reflow the grid.
+    projects.filter(project => !project.hidden).forEach(project => project.classList.add('visible'));
+    updateProgress();
+  }));
+
+  const dialog = document.getElementById('image-dialog');
+  const dialogImage = document.getElementById('dialog-image');
+  let imageOpener = null;
+  document.querySelectorAll('[data-image]').forEach(button => button.addEventListener('click', () => {
+    imageOpener = button;
+    dialogImage.src = button.dataset.image;
+    dialogImage.alt = button.querySelector('img').alt;
+    document.getElementById('dialog-title').textContent = button.dataset.title;
+    dialog.showModal();
+    document.documentElement.classList.add('scroll-lock');
+  }));
+  document.getElementById('close-dialog').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', () => {
+    document.documentElement.classList.remove('scroll-lock');
+    if (imageOpener) imageOpener.focus({ preventScroll: true });
+    dialogImage.removeAttribute('src');
+  });
+
+  // A lightweight 3D renderer: projected meshes, depth-sorted translucent faces,
+  // and orbital curves. No remote runtime, tracking, or WebGL dependency.
+  const canvas = document.getElementById('geometry');
+  const ctx = canvas.getContext('2d');
+  const scene = document.getElementById('scene');
+  const motion = document.getElementById('motion');
+  if (!ctx) { canvas.setAttribute('aria-label', 'Geometric illustration unavailable'); motion.disabled = true; return; }
+  const normalize = v => { const length = Math.hypot(...v); return v.map(n => n / length); };
+  function coreMesh() {
+    const t = (1 + Math.sqrt(5)) / 2;
+    const vertices = [[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(normalize);
+    const triangles = [[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+    const cache = new Map();
+    function midpoint(a,b) {
+      const key = [a,b].sort((x,y) => x-y).join(':');
+      if (cache.has(key)) return cache.get(key);
+      const index = vertices.length;
+      vertices.push(normalize(vertices[a].map((value,i) => (value + vertices[b][i]) / 2)));
+      cache.set(key,index); return index;
+    }
+    const faces = [];
+    triangles.forEach(([a,b,c]) => { const ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);faces.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]); });
+    return { vertices, faces };
+  }
+  function orbitMesh() {
+    const vertices=[],faces=[],uCount=48,vCount=10;
+    for (let u=0;u<uCount;u++) for(let v=0;v<vCount;v++) {
+      const a=u/uCount*Math.PI*2,b=v/vCount*Math.PI*2;
+      vertices.push([(0.92+0.29*Math.cos(b))*Math.cos(a),(0.92+0.29*Math.cos(b))*Math.sin(a),0.29*Math.sin(b)]);
+    }
+    for(let u=0;u<uCount;u++) for(let v=0;v<vCount;v++) faces.push([u*vCount+v,((u+1)%uCount)*vCount+v,((u+1)%uCount)*vCount+(v+1)%vCount,u*vCount+(v+1)%vCount]);
+    return {vertices,faces};
+  }
+  function prismMesh() {
+    const vertices=[[0,-1.45,0],[0,1.45,0]],faces=[];
+    for(let i=0;i<6;i++){const a=i*Math.PI/3;vertices.push([Math.cos(a)*.88,0,Math.sin(a)*.88]);}
+    for(let i=0;i<6;i++){faces.push([0,i+2,(i+1)%6+2],[1,(i+1)%6+2,i+2]);}
+    return {vertices,faces};
+  }
+  const meshes = {core:coreMesh(),orbit:orbitMesh(),prism:prismMesh()};
+  let shape='core',paused=reduced.matches,sceneVisible=true,frame=0,lastTime=0,spin=.45,width=0,height=0;
+  let rotationX=-.3,rotationY=.45,targetX=-.3,targetY=.45,dragging=false,startX=0,startY=0;
+  function rotate([x,y,z],rx,ry,rz=0) {
+    let ay=y*Math.cos(rx)-z*Math.sin(rx),az=y*Math.sin(rx)+z*Math.cos(rx);
+    let ax=x*Math.cos(ry)+az*Math.sin(ry);az=-x*Math.sin(ry)+az*Math.cos(ry);
+    return [ax*Math.cos(rz)-ay*Math.sin(rz),ax*Math.sin(rz)+ay*Math.cos(rz),az];
+  }
+  function project([x,y,z]) {
+    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*.31;
+    return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
+  }
+  function curve(radius,tilt,turn,opacity,dashed=false) {
+    ctx.beginPath();
+    for(let i=0;i<=100;i++) {
+      const a=i/100*Math.PI*2;
+      const point=project(rotate([Math.cos(a)*radius,Math.sin(a)*radius,0],tilt,turn,.2));
+      if(i===0)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1]);
+    }
+    ctx.strokeStyle=`rgba(149,199,165,${opacity})`;ctx.lineWidth=.7;ctx.setLineDash(dashed?[2,7]:[]);ctx.stroke();ctx.setLineDash([]);
+  }
+  function draw() {
+    if(!width||!height)return;
+    ctx.clearRect(0,0,width,height);
+    curve(1.64,1.12,.18,.25);curve(1.47,.25,1.16,.17,true);
+    const mesh=meshes[shape];
+    const world=mesh.vertices.map(v=>rotate(v,rotationX+(shape==='orbit'?.3:0),rotationY+spin,.12));
+    const points=world.map(project);
+    const faces=mesh.faces.map(indices=>({indices,depth:indices.reduce((sum,i)=>sum+world[i][2],0)/indices.length})).sort((a,b)=>b.depth-a.depth);
+    faces.forEach(({indices,depth},index)=>{
+      ctx.beginPath();indices.forEach((i,j)=>{const p=points[i];if(j===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1]);});ctx.closePath();
+      const light=Math.max(0,Math.min(1,(1.5-depth)/3));
+      const alpha=shape==='orbit'?.035+light*.075:.035+light*.085;
+      ctx.fillStyle=`rgba(${Math.round(110+light*55)},${Math.round(163+light*42)},${Math.round(137+light*15)},${alpha})`;ctx.fill();
+      ctx.strokeStyle=`rgba(183,231,170,${shape==='orbit'?.10+light*.22:.16+light*.36})`;
+      ctx.lineWidth=shape==='prism'?1:.6;ctx.stroke();
+    });
+    if(shape==='core')points.forEach((p,i)=>{const front=world[i][2]<.3;ctx.beginPath();ctx.arc(p[0],p[1],front?2:1.2,0,Math.PI*2);ctx.fillStyle=front?'#c3eeb5':'#779580';ctx.fill();});
+    const orbitPoint=project(rotate([1.64*Math.cos(spin*.7),1.64*Math.sin(spin*.7),0],1.12,.18,.2));
+    ctx.beginPath();ctx.arc(orbitPoint[0],orbitPoint[1],3,0,Math.PI*2);ctx.fillStyle='#bfecad';ctx.shadowColor='#b9e9a5';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+  }
+  function canAnimate(){return !paused&&!reduced.matches&&sceneVisible&&!document.hidden;}
+  function tick(now){frame=0;if(!canAnimate()){draw();return;}const delta=Math.min((now-lastTime)/1000,.05);lastTime=now;spin+=delta*.14;rotationX+=(targetX-rotationX)*.06;rotationY+=(targetY-rotationY)*.06;draw();frame=requestAnimationFrame(tick);}
+  function start(){if(!frame&&canAnimate()){lastTime=performance.now();frame=requestAnimationFrame(tick);}else draw();}
+  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled · Choose a form to explore':'Move your pointer to explore · Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
+  motion.addEventListener('click',()=>{paused=!paused;updateMotion();});
+  document.querySelectorAll('[data-shape]').forEach(button=>button.addEventListener('click',()=>{shape=button.dataset.shape;document.querySelectorAll('[data-shape]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));canvas.setAttribute('aria-label',`Three-dimensional geometric ${shape}`);document.getElementById('shape-status').textContent=`${shape[0].toUpperCase()+shape.slice(1)} selected`;draw();}));
+  function resize(){const bounds=canvas.getBoundingClientRect();width=bounds.width;height=bounds.height;const dpr=Math.min(devicePixelRatio||1,1.75);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+  if('ResizeObserver'in window)new ResizeObserver(resize).observe(canvas);else addEventListener('resize',resize);
+  canvas.addEventListener('pointerdown',event=>{if(!finePointer.matches)return;dragging=true;startX=event.clientX;startY=event.clientY;canvas.setPointerCapture(event.pointerId);});
+  canvas.addEventListener('pointermove',event=>{if(!finePointer.matches||reduced.matches)return;const bounds=canvas.getBoundingClientRect();if(dragging){targetY+=(event.clientX-startX)*.009;targetX+=(event.clientY-startY)*.009;startX=event.clientX;startY=event.clientY;}else{targetX=-.3+(event.clientY-bounds.top-height/2)/height*.5;targetY=.45+(event.clientX-bounds.left-width/2)/width*.65;}if(paused){rotationX=targetX;rotationY=targetY;draw();}});
+  const endDrag=()=>{dragging=false;};canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);canvas.addEventListener('lostpointercapture',endDrag);
+  canvas.addEventListener('pointerleave',()=>{if(!dragging){targetX=-.3;targetY=.45;}});
+  if('IntersectionObserver'in window){new IntersectionObserver(entries=>{sceneVisible=entries[0].isIntersecting;if(!sceneVisible&&frame){cancelAnimationFrame(frame);frame=0;}start();},{threshold:.01}).observe(scene);}
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&frame){cancelAnimationFrame(frame);frame=0;}start();});
+  reduced.addEventListener('change',()=>{paused=reduced.matches;document.documentElement.classList.toggle('js-motion',!reduced.matches);reveals.forEach(element=>element.classList.add('visible'));updateMotion();});
+  resize();updateMotion();document.documentElement.dataset.ready='true';
+})();
