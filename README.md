@@ -8,9 +8,18 @@ I'm studying Computer Science at Canadian University Dubai, with career interest
 
 ## Featured Projects
 
-Four student projects in software engineering and machine learning. Select a preview for the project description, or open its source code.
+Five student projects in software engineering and machine learning. Select a preview for the project description, or open its source code.
 
 <table>
+  <tr>
+    <td colspan="2" valign="top">
+      <h3><a href="#sentinel-ai">SENTINEL AI — Autonomous Software Reliability Engineer</a></h3>
+      <a href="#sentinel-ai"><img src="assets/projects/sentinel-ai-overview.png" alt="SENTINEL AI — real scanner results on an intentionally vulnerable synthetic fixture" width="760"></a>
+      <p>Inspectable security analysis · Reliability digital twin · Human-reviewed patch proposals</p>
+      <p><sub>Next.js · TypeScript · FastAPI · PostgreSQL · Redis · Celery · Semgrep · Bandit</sub></p>
+      <p><a href="#sentinel-ai">Description & screenshots</a> · <a href="https://github.com/mohamedbreed192-droid/sentinel-ai">Source code ↗</a></p>
+    </td>
+  </tr>
   <tr>
     <td width="50%" valign="top">
       <h3><a href="#incidentlens">IncidentLens</a></h3>
@@ -45,9 +54,44 @@ Four student projects in software engineering and machine learning. Select a pre
   </tr>
 </table>
 
-The three applications use synthetic data; the aircraft engine baseline uses NASA simulated sensor data. These are student research and learning projects.
+The application previews use synthetic data; the aircraft engine baseline uses NASA simulated sensor data. These are student research and learning projects.
 
 ## Project descriptions
+
+<a id="sentinel-ai"></a>
+
+### [SENTINEL AI — Autonomous Software Reliability Engineer](https://github.com/mohamedbreed192-droid/sentinel-ai)
+
+Inspect public GitHub repositories with **real security scanners and an explainable architecture graph**. SENTINEL AI connects source-free findings to local import relationships, traces potentially affected modules, and proposes changes for human review.
+
+**Technology:** Next.js · TypeScript · Tailwind CSS · Python · FastAPI · PostgreSQL · SQLAlchemy · Redis · Celery · Docker Compose
+
+- Imports commit-pinned, bounded public snapshots; runs Bandit, Semgrep, pip-audit, and npm audit without executing repository code or installing repository packages.
+- Records scanner coverage explicitly; missing or failed scanners never count as clean results.
+- Builds a **Reliability Digital Twin** from static local imports and highlights reverse dependency paths when a finding is selected.
+- Provides deterministic guidance, optional LLM explanations, narrow unverified patch proposals, generated test templates, and downloadable reports.
+- Includes backend tests, Playwright interaction/mobile checks, migrations, CI, and an explicitly enabled offline test container.
+
+**Scope:** Single-owner local engineering baseline. Screenshots show actual scanner results on an intentionally vulnerable synthetic fixture. No automatic fixes, PRs, merges, or deployments. Known upstream Semgrep dependency advisories remain documented; live LLM behavior is unverified.
+
+[Source code](https://github.com/mohamedbreed192-droid/sentinel-ai) · [Run locally](https://github.com/mohamedbreed192-droid/sentinel-ai#start-locally) · [Architecture](https://github.com/mohamedbreed192-droid/sentinel-ai/blob/main/docs/ARCHITECTURE.md) · [Verification & limits](https://github.com/mohamedbreed192-droid/sentinel-ai/blob/main/docs/VERIFICATION.md)
+
+**Reliability digital twin — real application screenshot**
+
+[![SENTINEL AI digital twin showing possible impact through static local imports](assets/projects/sentinel-ai-digital-twin.png)](https://github.com/mohamedbreed192-droid/sentinel-ai/blob/main/docs/screenshots/digital-twin.png)
+
+<details>
+<summary>Security findings and proposed code review screenshots</summary>
+
+![SENTINEL AI findings with source-free evidence](assets/projects/sentinel-ai-security-findings.png)
+
+![SENTINEL AI assistant with an unverified patch and generated test template](assets/projects/sentinel-ai-assistant.png)
+
+These captures come from the running application. A scanner finding is a review signal, and a proposed change is not a verified fix.
+
+</details>
+
+---
 
 <a id="incidentlens"></a>
 
