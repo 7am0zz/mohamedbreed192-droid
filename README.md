@@ -91,6 +91,8 @@ Broker confirmation establishes acceptance and routing at publish time; it does 
 
 **Computer Science graduation project · Phase 1 — Machine Learning Baseline and Research**
 
+[![Aircraft engine RUL baseline: actual versus predicted remaining useful life for 100 test engines, with RMSE 17.661 cycles](assets/projects/aircraft-engine-rul.png)](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/results/evaluation_notes.md)
+
 Predict aircraft engine **Remaining Useful Life (RUL)** from NASA C-MAPSS FD001 simulated sensor measurements using a Random Forest regressor.
 
 **Technology:** Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter · GitHub Actions
