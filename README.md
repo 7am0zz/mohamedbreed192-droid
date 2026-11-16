@@ -10,9 +10,9 @@ I'm studying Computer Science at Canadian University Dubai, with career interest
 
 ## Featured Projects
 
-[IncidentLens](#incidentlens) · [AccessLedger](#accessledger) · [QueueBridge](#queuebridge)
+[IncidentLens](#incidentlens) · [AccessLedger](#accessledger) · [QueueBridge](#queuebridge) · [Aircraft Engine Predictive Maintenance](#aircraft-engine-predictive-maintenance)
 
-Three student portfolio applications using **synthetic data**. Screenshots show the real interfaces and recorded demo activity; these projects are not production services.
+Four student projects spanning software engineering and machine learning. The three applications use **synthetic data**; the aircraft engine graduation project uses NASA C-MAPSS simulated sensor data. Screenshots show the application interfaces and recorded demo activity. These projects are research and learning work.
 
 ### [IncidentLens](https://github.com/mohamedbreed192-droid/incidentlens)
 
@@ -83,6 +83,26 @@ Broker confirmation establishes acceptance and routing at publish time; it does 
 [Failure and recovery walkthrough](https://github.com/mohamedbreed192-droid/queuebridge/blob/main/docs/demo.md)
 
 </details>
+
+---
+
+<a id="aircraft-engine-predictive-maintenance"></a>
+### [AI-Powered Predictive Maintenance for Aircraft Engines](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance)
+
+**Computer Science graduation project · Phase 1 — Machine Learning Baseline and Research**
+
+Predict aircraft engine **Remaining Useful Life (RUL)** from NASA C-MAPSS FD001 simulated sensor measurements using a Random Forest regressor.
+
+**Technology:** Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter · GitHub Actions
+
+- Builds RUL targets from complete training lifetimes, caps labels at 125 cycles, and selects sensors using training variance.
+- Evaluates each test engine’s final observed cycle against official RUL labels, also capped at 125 cycles.
+- Records measured **RMSE of 17.661 cycles**, **MAE of 12.351 cycles**, and **R² of 0.806** across 100 test engines.
+- Includes reproducible Python modules, five passing unit tests, dataset hashes, per-engine predictions, and a five-paper literature review.
+
+**Scope:** Phase 1 baseline on simulated data. Notebook and Python module results match. Advanced models, security evaluation, and deployment are planned future work.
+
+[Source code](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance) · [Reproduce the baseline](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance#reproduce) · [Evaluation & results](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/results/evaluation_notes.md) · [Literature review](https://github.com/mohamedbreed192-droid/aircraft-engine-predictive-maintenance/blob/main/research/literature_review.md)
 
 ## Technical toolkit
 
