@@ -147,8 +147,11 @@
     return [ax*Math.cos(rz)-ay*Math.sin(rz),ax*Math.sin(rz)+ay*Math.cos(rz),az];
   }
   function project([x,y,z]) {
-    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*(width < 400 ? .24 : .28);
-    return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
+    const scale = 4.8 / (4.8 + z);
+    const radius = Math.min(width, height) * (width < 400 ? .24 : .28);
+    const labelSpace = width < 400 ? 47 : 58;
+    const horizontalRadius = Math.min(radius * 1.34, (width / 2 - labelSpace) * .97);
+    return [width / 2 + x * horizontalRadius * scale, height * .47 + y * radius * scale, z];
   }
   function drawSkillNodes(points) {
     const nodes = skills.map((skill, index) => ({
@@ -205,6 +208,12 @@
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
       ctx.stroke();
+    }
+    for (const [x, y, depth] of points.slice(skills.length)) {
+      ctx.beginPath();
+      ctx.arc(x, y, depth < 0 ? 1.8 : 1.25, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${.55 - .35 * depth})`;
+      ctx.fill();
     }
     drawSkillNodes(points);
   }
