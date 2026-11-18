@@ -125,6 +125,16 @@
     for(let i=0;i<6;i++){faces.push([0,i+2,(i+1)%6+2],[1,(i+1)%6+2,i+2]);}
     return {vertices,faces};
   }
+  const skills = [
+    'Python', 'Java', 'C++', 'TypeScript', 'Next.js', 'FastAPI',
+    'PostgreSQL', 'Spring Boot', 'scikit-learn', 'Docker Compose', 'Git', 'GitHub Actions',
+  ];
+  // The core uses its original vertices, and the orbit uses evenly spaced outer nodes.
+  const skillVertices = {
+    core: skills.map((_, index) => index),
+    orbit: skills.map((_, index) => index * 40),
+    prism: skills.slice(0, 8).map((_, index) => index),
+  };
   const meshes = {core:coreMesh(),orbit:orbitMesh(),prism:prismMesh()};
   let shape='core',paused=reduced.matches,sceneVisible=true,frame=0,lastTime=0,spin=.45,width=0,height=0;
   let rotationX=-.3,rotationY=.45,targetX=-.3,targetY=.45,activePointer=null,startX=0,startY=0;
@@ -134,7 +144,7 @@
     return [ax*Math.cos(rz)-ay*Math.sin(rz),ax*Math.sin(rz)+ay*Math.cos(rz),az];
   }
   function project([x,y,z]) {
-    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*.31;
+    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*(width < 400 ? .20 : .25);
     return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
   }
   function curve(radius,tilt,turn,opacity,dashed=false) {
@@ -144,8 +154,57 @@
       const point=project(rotate([Math.cos(a)*radius,Math.sin(a)*radius,0],tilt,turn,.2));
       if(i===0)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1]);
     }
-    ctx.strokeStyle=`rgba(149,199,165,${opacity})`;ctx.lineWidth=.7;ctx.setLineDash(dashed?[2,7]:[]);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=`rgba(173,138,255,${opacity})`;ctx.lineWidth=.7;ctx.setLineDash(dashed?[2,7]:[]);ctx.stroke();ctx.setLineDash([]);
   }
+  function drawSkillNodes(points) {
+    const nodes = skillVertices[shape].map((vertex, index) => ({
+      point: points[vertex],
+      skill: skills[index],
+    }));
+    nodes.sort((a, b) => a.point[0] - b.point[0]);
+
+    const inset = width < 400 ? 8 : 17;
+    const fontSize = width < 400 ? 10 : 12;
+    const labelHeight = fontSize + 10;
+    ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
+    ctx.textBaseline = 'middle';
+
+    const midpoint = nodes.length / 2;
+    const sides = [nodes.slice(0, midpoint), nodes.slice(midpoint)];
+    sides.forEach((side, direction) => {
+      side.sort((a, b) => a.point[1] - b.point[1]);
+      side.forEach(({ point: [px, py, depth], skill }, index) => {
+        const labelWidth = Math.ceil(ctx.measureText(skill).width) + 14;
+        const x = direction ? width - inset - labelWidth : inset;
+        const y = height * .47 + (index - (side.length - 1) / 2) * (labelHeight + 9);
+        const anchorX = direction ? x : x + labelWidth;
+        const color = depth < 0 ? '#9cd6ff' : '#b3a1ed';
+
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(anchorX + (direction ? -7 : 7), y);
+        ctx.lineTo(anchorX, y);
+        ctx.strokeStyle = color + '94';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.roundRect(x, y - labelHeight / 2, labelWidth, labelHeight, 5);
+        ctx.fillStyle = '#0c172e';
+        ctx.fill();
+        ctx.strokeStyle = '#344c73';
+        ctx.stroke();
+        ctx.fillStyle = '#e8f3ff';
+        ctx.fillText(skill, x + 7, y);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+    });
+  }
+
   function draw() {
     if(!width||!height)return;
     ctx.clearRect(0,0,width,height);
@@ -158,13 +217,14 @@
       ctx.beginPath();indices.forEach((i,j)=>{const p=points[i];if(j===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1]);});ctx.closePath();
       const light=Math.max(0,Math.min(1,(1.5-depth)/3));
       const alpha=shape==='orbit'?.035+light*.075:.035+light*.085;
-      ctx.fillStyle=`rgba(${Math.round(110+light*55)},${Math.round(163+light*42)},${Math.round(137+light*15)},${alpha})`;ctx.fill();
-      ctx.strokeStyle=`rgba(183,231,170,${shape==='orbit'?.10+light*.22:.16+light*.36})`;
+      ctx.fillStyle=`rgba(${Math.round(73+light*75)},${Math.round(123+light*75)},255,${alpha})`;ctx.fill();
+      ctx.strokeStyle=`rgba(137,196,255,${shape==='orbit'?.10+light*.22:.16+light*.36})`;
       ctx.lineWidth=shape==='prism'?1:.6;ctx.stroke();
     });
-    if(shape==='core')points.forEach((p,i)=>{const front=world[i][2]<.3;ctx.beginPath();ctx.arc(p[0],p[1],front?2:1.2,0,Math.PI*2);ctx.fillStyle=front?'#c3eeb5':'#779580';ctx.fill();});
+    if(shape==='core')points.forEach((p,i)=>{const front=world[i][2]<.3;ctx.beginPath();ctx.arc(p[0],p[1],front?2:1.2,0,Math.PI*2);ctx.fillStyle=front?'#a9dcff':'#577eaf';ctx.fill();});
     const orbitPoint=project(rotate([1.64*Math.cos(spin*.7),1.64*Math.sin(spin*.7),0],1.12,.18,.2));
-    ctx.beginPath();ctx.arc(orbitPoint[0],orbitPoint[1],3,0,Math.PI*2);ctx.fillStyle='#bfecad';ctx.shadowColor='#b9e9a5';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(orbitPoint[0],orbitPoint[1],3,0,Math.PI*2);ctx.fillStyle='#f1eaff';ctx.shadowColor='#ad8aff';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+    drawSkillNodes(points);
   }
   function canAnimate(){return !paused&&!reduced.matches&&sceneVisible&&!document.hidden;}
   function tick(now){frame=0;if(!canAnimate()){draw();return;}const delta=Math.min((now-lastTime)/1000,.05);lastTime=now;spin+=delta*.14;rotationX+=(targetX-rotationX)*.06;rotationY+=(targetY-rotationY)*.06;draw();frame=requestAnimationFrame(tick);}
@@ -176,7 +236,7 @@
     button.addEventListener('click', () => {
       shape = button.dataset.shape;
       shapeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-      canvas.setAttribute('aria-label', `Three-dimensional geometric ${shape}`);
+      canvas.setAttribute('aria-label', `Interactive 3D skills ${shape}`);
       document.getElementById('shape-status').textContent = `${button.textContent} selected`;
       draw();
     });
