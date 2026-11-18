@@ -144,7 +144,7 @@
     return [ax*Math.cos(rz)-ay*Math.sin(rz),ax*Math.sin(rz)+ay*Math.cos(rz),az];
   }
   function project([x,y,z]) {
-    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*(width < 400 ? .20 : .25);
+    const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*(width < 400 ? .24 : .28);
     return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
   }
   function curve(radius,tilt,turn,opacity,dashed=false) {
@@ -161,48 +161,40 @@
       point: points[vertex],
       skill: skills[index],
     }));
-    nodes.sort((a, b) => a.point[0] - b.point[0]);
-
-    const inset = width < 400 ? 8 : 17;
     const fontSize = width < 400 ? 10 : 12;
-    const labelHeight = fontSize + 10;
+    const labelHeight = fontSize + 4;
     ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const midpoint = nodes.length / 2;
-    const sides = [nodes.slice(0, midpoint), nodes.slice(midpoint)];
-    sides.forEach((side, direction) => {
-      side.sort((a, b) => a.point[1] - b.point[1]);
-      side.forEach(({ point: [px, py, depth], skill }, index) => {
-        const labelWidth = Math.ceil(ctx.measureText(skill).width) + 14;
-        const x = direction ? width - inset - labelWidth : inset;
-        const y = height * .47 + (index - (side.length - 1) / 2) * (labelHeight + 9);
-        const anchorX = direction ? x : x + labelWidth;
-        const color = depth < 0 ? '#9cd6ff' : '#b3a1ed';
+    const labels = [];
+    // Place the lowest nodes first so colliding labels can move up in the same column.
+    nodes.sort((a, b) => b.point[1] - a.point[1]);
+    for (const { point: [x, y, depth], skill } of nodes) {
+      const halfWidth = Math.ceil(ctx.measureText(skill).width / 2) + 4;
+      const left = x - halfWidth;
+      const right = x + halfWidth;
+      let top = y - labelHeight - 6;
+      for (const placed of labels) {
+        if (left < placed.right + 2 && right > placed.left - 2 &&
+            top < placed.top + labelHeight + 2 && top + labelHeight + 2 > placed.top) {
+          top = placed.top - labelHeight - 2;
+        }
+      }
+      labels.push({ left, right, top });
+      labels.sort((a, b) => b.top - a.top);
+      ctx.beginPath();
+      ctx.roundRect(left, top, halfWidth * 2, labelHeight, 4);
+      ctx.fillStyle = '#0c172eee';
+      ctx.fill();
+      ctx.fillStyle = '#e8f3ff';
+      ctx.fillText(skill, x, top + labelHeight / 2);
 
-        ctx.beginPath();
-        ctx.moveTo(px, py);
-        ctx.lineTo(anchorX + (direction ? -7 : 7), y);
-        ctx.lineTo(anchorX, y);
-        ctx.strokeStyle = color + '94';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.roundRect(x, y - labelHeight / 2, labelWidth, labelHeight, 5);
-        ctx.fillStyle = '#0c172e';
-        ctx.fill();
-        ctx.strokeStyle = '#344c73';
-        ctx.stroke();
-        ctx.fillStyle = '#e8f3ff';
-        ctx.fillText(skill, x + 7, y);
-
-        ctx.beginPath();
-        ctx.arc(px, py, 3, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-      });
-    });
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = depth < 0 ? '#9cd6ff' : '#b3a1ed';
+      ctx.fill();
+    }
   }
 
   function draw() {
