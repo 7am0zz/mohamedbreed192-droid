@@ -162,7 +162,7 @@
       labels.sort((a, b) => b.top - a.top);
       ctx.beginPath();
       ctx.roundRect(left, top, halfWidth * 2, labelHeight, 4);
-      ctx.fillStyle = '#000000e8';
+      ctx.fillStyle = '#080d1bee';
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.fillText(skill, x, top + labelHeight / 2);
@@ -194,7 +194,7 @@
   function canAnimate(){return !paused&&!reduced.matches&&sceneVisible&&!document.hidden;}
   function tick(now){frame=0;if(!canAnimate()){draw();return;}const delta=Math.min((now-lastTime)/1000,.05);lastTime=now;spin+=delta*.14;rotationX+=(targetX-rotationX)*.06;rotationY+=(targetY-rotationY)*.06;draw();frame=requestAnimationFrame(tick);}
   function start(){if(!frame&&canAnimate()){lastTime=performance.now();frame=requestAnimationFrame(tick);}else draw();}
-  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled':'Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
+  function updateMotion(){document.body.classList.toggle('motion-paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume animations':'Pause animations');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled':'Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
   motion.addEventListener('click',()=>{paused=!paused;updateMotion();});
   function resize(){const bounds=canvas.getBoundingClientRect();width=bounds.width;height=bounds.height;const dpr=Math.min(devicePixelRatio||1,1.75);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
   if('ResizeObserver'in window)new ResizeObserver(resize).observe(canvas);else addEventListener('resize',resize);

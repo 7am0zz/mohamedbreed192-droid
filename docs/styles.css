@@ -24,10 +24,24 @@
 
 .arrow-icon{width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.scroll-cue .arrow-icon{width:13px;height:13px}.project-link .arrow-icon{width:12px;height:12px}footer .arrow-icon{width:11px;height:11px}
 
-.scene {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #000;
+body { isolation: isolate; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: -18%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 28% 35%, #328dde2f, transparent 43%),
+    radial-gradient(ellipse at 73% 58%, #7654d936, transparent 45%),
+    radial-gradient(ellipse at 47% 81%, #365fc522, transparent 38%);
+  animation: ambient-drift 22s ease-in-out infinite alternate;
+}
+body.motion-paused::before { animation-play-state: paused; }
+@keyframes ambient-drift {
+  0% { transform: translate(-5%, -3%) scale(1); }
+  50% { transform: translate(5%, 4%) scale(1.08); }
+  100% { transform: translate(-1%, 7%) scale(1.02); }
 }
 .scene-hint { color: var(--muted); }
 .hello {
