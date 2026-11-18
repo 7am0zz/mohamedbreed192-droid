@@ -4,6 +4,23 @@
   const finePointer = matchMedia('(pointer: fine)');
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  const rain = document.querySelector('.binary-rain');
+  const streams = document.createDocumentFragment();
+  for (let index = 0; index < 36; index++) {
+    const column = document.createElement('span');
+    const position = (index + .5) / 36;
+    const edge = Math.abs(position - .5) * 2;
+    const duration = 9 + Math.random() * 12;
+    const length = 10 + Math.floor(Math.random() * 10);
+    column.style.left = `${position * 100}%`;
+    column.style.animationDuration = `${duration}s`;
+    column.style.animationDelay = `-${Math.random() * duration}s`;
+    column.style.opacity = String(.12 + .34 * edge ** 1.65);
+    column.textContent = Array.from({ length }, () => Math.random() < .5 ? '0' : '1').join('\n');
+    streams.append(column);
+  }
+  rain.append(streams);
+
   // Keep the page readable when JavaScript or animation APIs are unavailable.
   const reveals = [...document.querySelectorAll('.reveal')];
   if ('IntersectionObserver' in window && !reduced.matches) {

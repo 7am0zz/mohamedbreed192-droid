@@ -37,6 +37,37 @@ body::before {
     radial-gradient(ellipse at 47% 81%, #365fc522, transparent 38%);
   animation: ambient-drift 22s ease-in-out infinite alternate;
 }
+.binary-rain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.binary-rain span {
+  position: absolute;
+  top: 0;
+  font: 500 13px/1.42 ui-monospace, monospace;
+  white-space: pre;
+  color: #69c0ff;
+  text-shadow: 0 0 8px #4d9fffa6;
+  mask-image: linear-gradient(transparent, #000 68%);
+  animation: binary-fall linear infinite;
+}
+.binary-rain span:nth-child(3n) { color: #ad8aff; }
+.binary-rain span:nth-child(5n) { color: #bde9ff; }
+body.motion-paused .binary-rain span { animation-play-state: paused; }
+@keyframes binary-fall {
+  from { transform: translate3d(0, -100%, 0); }
+  to { transform: translate3d(0, 100vh, 0); }
+}
+@media (max-width: 600px) {
+  .binary-rain span { font-size: 11px; }
+  .binary-rain span:nth-child(even) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .binary-rain { display: none; }
+}
 body.motion-paused::before { animation-play-state: paused; }
 @keyframes ambient-drift {
   0% { transform: translate(-5%, -3%) scale(1); }
