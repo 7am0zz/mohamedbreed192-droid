@@ -81,12 +81,11 @@
     });
   }
 
-  // A lightweight 3D renderer with projected meshes and depth-sorted translucent faces.
+  // A lightweight 3D renderer with a perspective-projected wireframe.
   const canvas = document.getElementById('geometry');
   const ctx = canvas.getContext('2d');
   const scene = document.getElementById('scene');
   const motion = document.getElementById('motion');
-  const shapeButtons = [...document.querySelectorAll('[data-shape]')];
   if (!ctx) {
     canvas.setAttribute('aria-label', 'Geometric illustration unavailable');
     document.getElementById('scene-hint').textContent = 'Geometric illustration unavailable';
@@ -109,33 +108,21 @@
     triangles.forEach(([a,b,c]) => { const ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);faces.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]); });
     return { vertices, faces };
   }
-  function orbitMesh() {
-    const vertices=[],faces=[],uCount=48,vCount=10;
-    for (let u=0;u<uCount;u++) for(let v=0;v<vCount;v++) {
-      const a=u/uCount*Math.PI*2,b=v/vCount*Math.PI*2;
-      vertices.push([(0.92+0.29*Math.cos(b))*Math.cos(a),(0.92+0.29*Math.cos(b))*Math.sin(a),0.29*Math.sin(b)]);
-    }
-    for(let u=0;u<uCount;u++) for(let v=0;v<vCount;v++) faces.push([u*vCount+v,((u+1)%uCount)*vCount+v,((u+1)%uCount)*vCount+(v+1)%vCount,u*vCount+(v+1)%vCount]);
-    return {vertices,faces};
-  }
-  function prismMesh() {
-    const vertices=[[0,-1.45,0],[0,1.45,0]],faces=[];
-    for(let i=0;i<6;i++){const a=i*Math.PI/3;vertices.push([Math.cos(a)*.88,0,Math.sin(a)*.88]);}
-    for(let i=0;i<6;i++){faces.push([0,i+2,(i+1)%6+2],[1,(i+1)%6+2,i+2]);}
-    return {vertices,faces};
-  }
   const skills = [
     'Python', 'Java', 'C++', 'TypeScript', 'Next.js', 'FastAPI',
     'PostgreSQL', 'Spring Boot', 'scikit-learn', 'Docker Compose', 'Git', 'GitHub Actions',
   ];
-  // The core uses its original vertices, and the orbit uses evenly spaced outer nodes.
-  const skillVertices = {
-    core: skills.map((_, index) => index),
-    orbit: skills.map((_, index) => index * 40),
-    prism: skills.slice(0, 8).map((_, index) => index),
-  };
-  const meshes = {core:coreMesh(),orbit:orbitMesh(),prism:prismMesh()};
-  let shape='core',paused=reduced.matches,sceneVisible=true,frame=0,lastTime=0,spin=.45,width=0,height=0;
+  const mesh = coreMesh();
+  const uniqueEdges = new Map();
+  for (const face of mesh.faces) {
+    face.forEach((a, index) => {
+      const b = face[(index + 1) % face.length];
+      const key = a < b ? `${a}:${b}` : `${b}:${a}`;
+      uniqueEdges.set(key, [a, b]);
+    });
+  }
+  const edges = [...uniqueEdges.values()];
+  let paused = false, sceneVisible = true, frame = 0, lastTime = 0, spin = .45, width = 0, height = 0;
   let rotationX=-.3,rotationY=.45,targetX=-.3,targetY=.45,activePointer=null,startX=0,startY=0;
   function rotate([x,y,z],rx,ry,rz=0) {
     let ay=y*Math.cos(rx)-z*Math.sin(rx),az=y*Math.sin(rx)+z*Math.cos(rx);
@@ -147,9 +134,9 @@
     return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
   }
   function drawSkillNodes(points) {
-    const nodes = skillVertices[shape].map((vertex, index) => ({
-      point: points[vertex],
-      skill: skills[index],
+    const nodes = skills.map((skill, index) => ({
+      point: points[index],
+      skill,
     }));
     const fontSize = width < 400 ? 10 : 12;
     const labelHeight = fontSize + 4;
@@ -175,14 +162,14 @@
       labels.sort((a, b) => b.top - a.top);
       ctx.beginPath();
       ctx.roundRect(left, top, halfWidth * 2, labelHeight, 4);
-      ctx.fillStyle = '#0c172eee';
+      ctx.fillStyle = '#000000e8';
       ctx.fill();
-      ctx.fillStyle = '#e8f3ff';
+      ctx.fillStyle = '#ffffff';
       ctx.fillText(skill, x, top + labelHeight / 2);
 
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = depth < 0 ? '#9cd6ff' : '#b3a1ed';
+      ctx.fillStyle = depth < 0 ? '#ffffff' : '#b8b8b8';
       ctx.fill();
     }
   }
@@ -190,58 +177,25 @@
   function draw() {
     if(!width||!height)return;
     ctx.clearRect(0,0,width,height);
-    const mesh=meshes[shape];
-    const world=mesh.vertices.map(v=>rotate(v,rotationX+(shape==='orbit'?.3:0),rotationY+spin,.12));
-    const points=world.map(project);
-    const faces=mesh.faces.map(indices=>({indices,depth:indices.reduce((sum,i)=>sum+world[i][2],0)/indices.length})).sort((a,b)=>b.depth-a.depth);
-    for (const { indices, depth } of faces) {
+    const points = mesh.vertices.map(vertex => project(rotate(vertex, rotationX, rotationY + spin, .12)));
+    ctx.lineWidth = .9;
+    for (const [a, b] of edges) {
+      const [x1, y1, z1] = points[a];
+      const [x2, y2, z2] = points[b];
+      const opacity = .48 - .38 * (z1 + z2) / 2;
       ctx.beginPath();
-      indices.forEach((vertex, index) => {
-        const [x, y] = points[vertex];
-        if (index === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.closePath();
-
-      const [a, b, c] = indices.map(vertex => world[vertex]);
-      const u = b.map((value, axis) => value - a[axis]);
-      const v = c.map((value, axis) => value - a[axis]);
-      const [nx, ny, nz] = normalize([
-        u[1] * v[2] - u[2] * v[1],
-        u[2] * v[0] - u[0] * v[2],
-        u[0] * v[1] - u[1] * v[0],
-      ]);
-      const towardCamera = nz > 0 ? -1 : 1;
-      const diffuse = Math.max(0, towardCamera * (-.42 * nx - .55 * ny - .72 * nz));
-      const rim = (1 - Math.abs(nz)) ** 3;
-      const reflection = diffuse ** 9;
-      const front = Math.max(0, -depth);
-      const red = Math.round(66 + 62 * diffuse + 35 * rim + 58 * reflection);
-      const green = Math.round(99 + 73 * diffuse + 42 * reflection);
-      const blue = Math.round(171 + 48 * diffuse + 21 * rim + 15 * reflection);
-      const opacity = .035 + .12 * diffuse + .15 * rim + .13 * reflection + .035 * front;
-      ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${opacity})`;
-      ctx.fill();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.stroke();
     }
-    const orbitPoint=project(rotate([1.64*Math.cos(spin*.7),1.64*Math.sin(spin*.7),0],1.12,.18,.2));
-    ctx.beginPath();ctx.arc(orbitPoint[0],orbitPoint[1],3,0,Math.PI*2);ctx.fillStyle='#f1eaff';ctx.shadowColor='#ad8aff';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
     drawSkillNodes(points);
   }
   function canAnimate(){return !paused&&!reduced.matches&&sceneVisible&&!document.hidden;}
   function tick(now){frame=0;if(!canAnimate()){draw();return;}const delta=Math.min((now-lastTime)/1000,.05);lastTime=now;spin+=delta*.14;rotationX+=(targetX-rotationX)*.06;rotationY+=(targetY-rotationY)*.06;draw();frame=requestAnimationFrame(tick);}
   function start(){if(!frame&&canAnimate()){lastTime=performance.now();frame=requestAnimationFrame(tick);}else draw();}
-  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled · Choose a form to explore':'Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
+  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled':'Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
   motion.addEventListener('click',()=>{paused=!paused;updateMotion();});
-  shapeButtons.forEach(button => {
-    button.disabled = false;
-    button.addEventListener('click', () => {
-      shape = button.dataset.shape;
-      shapeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-      canvas.setAttribute('aria-label', `Interactive 3D skills ${shape}`);
-      document.getElementById('shape-status').textContent = `${button.textContent} selected`;
-      draw();
-    });
-  });
   function resize(){const bounds=canvas.getBoundingClientRect();width=bounds.width;height=bounds.height;const dpr=Math.min(devicePixelRatio||1,1.75);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
   if('ResizeObserver'in window)new ResizeObserver(resize).observe(canvas);else addEventListener('resize',resize);
   canvas.addEventListener('pointerdown', event => {
