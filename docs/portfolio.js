@@ -147,15 +147,6 @@
     const scale = 4.8 / (4.8 + z),size=Math.min(width,height)*(width < 400 ? .24 : .28);
     return [width*.5 + x*size*scale,height*.47 + y*size*scale,z];
   }
-  function curve(radius,tilt,turn,opacity,dashed=false) {
-    ctx.beginPath();
-    for(let i=0;i<=100;i++) {
-      const a=i/100*Math.PI*2;
-      const point=project(rotate([Math.cos(a)*radius,Math.sin(a)*radius,0],tilt,turn,.2));
-      if(i===0)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1]);
-    }
-    ctx.strokeStyle=`rgba(173,138,255,${opacity})`;ctx.lineWidth=.7;ctx.setLineDash(dashed?[2,7]:[]);ctx.stroke();ctx.setLineDash([]);
-  }
   function drawSkillNodes(points) {
     const nodes = skillVertices[shape].map((vertex, index) => ({
       point: points[vertex],
@@ -200,20 +191,27 @@
   function draw() {
     if(!width||!height)return;
     ctx.clearRect(0,0,width,height);
-    curve(1.64,1.12,.18,.25);curve(1.47,.25,1.16,.17,true);
     const mesh=meshes[shape];
     const world=mesh.vertices.map(v=>rotate(v,rotationX+(shape==='orbit'?.3:0),rotationY+spin,.12));
     const points=world.map(project);
     const faces=mesh.faces.map(indices=>({indices,depth:indices.reduce((sum,i)=>sum+world[i][2],0)/indices.length})).sort((a,b)=>b.depth-a.depth);
-    faces.forEach(({indices,depth},index)=>{
-      ctx.beginPath();indices.forEach((i,j)=>{const p=points[i];if(j===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1]);});ctx.closePath();
-      const light=Math.max(0,Math.min(1,(1.5-depth)/3));
-      const alpha=shape==='orbit'?.035+light*.075:.035+light*.085;
-      ctx.fillStyle=`rgba(${Math.round(73+light*75)},${Math.round(123+light*75)},255,${alpha})`;ctx.fill();
-      ctx.strokeStyle=`rgba(137,196,255,${shape==='orbit'?.10+light*.22:.16+light*.36})`;
-      ctx.lineWidth=shape==='prism'?1:.6;ctx.stroke();
-    });
-    if(shape==='core')points.forEach((p,i)=>{const front=world[i][2]<.3;ctx.beginPath();ctx.arc(p[0],p[1],front?2:1.2,0,Math.PI*2);ctx.fillStyle=front?'#a9dcff':'#577eaf';ctx.fill();});
+    for (const { indices, depth } of faces) {
+      ctx.beginPath();
+      indices.forEach((vertex, index) => {
+        const [x, y] = points[vertex];
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+
+      const position = indices.reduce((sum, vertex) => {
+        const [x, y] = world[vertex];
+        return sum - .17 * x - .25 * y;
+      }, 0) / indices.length;
+      const light = Math.max(0, Math.min(1, .48 - depth * .34 + position));
+      ctx.fillStyle = `rgb(${Math.round(23 + light * 77)}, ${Math.round(34 + light * 94)}, ${Math.round(76 + light * 111)})`;
+      ctx.fill();
+    }
     const orbitPoint=project(rotate([1.64*Math.cos(spin*.7),1.64*Math.sin(spin*.7),0],1.12,.18,.2));
     ctx.beginPath();ctx.arc(orbitPoint[0],orbitPoint[1],3,0,Math.PI*2);ctx.fillStyle='#f1eaff';ctx.shadowColor='#ad8aff';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
     drawSkillNodes(points);
