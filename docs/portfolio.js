@@ -81,8 +81,7 @@
     });
   }
 
-  // A lightweight 3D renderer: projected meshes, depth-sorted translucent faces,
-  // and orbital curves. No remote runtime, tracking, or WebGL dependency.
+  // A lightweight 3D renderer with projected meshes and depth-sorted translucent faces.
   const canvas = document.getElementById('geometry');
   const ctx = canvas.getContext('2d');
   const scene = document.getElementById('scene');
@@ -204,12 +203,24 @@
       });
       ctx.closePath();
 
-      const position = indices.reduce((sum, vertex) => {
-        const [x, y] = world[vertex];
-        return sum - .17 * x - .25 * y;
-      }, 0) / indices.length;
-      const light = Math.max(0, Math.min(1, .48 - depth * .34 + position));
-      ctx.fillStyle = `rgb(${Math.round(23 + light * 77)}, ${Math.round(34 + light * 94)}, ${Math.round(76 + light * 111)})`;
+      const [a, b, c] = indices.map(vertex => world[vertex]);
+      const u = b.map((value, axis) => value - a[axis]);
+      const v = c.map((value, axis) => value - a[axis]);
+      const [nx, ny, nz] = normalize([
+        u[1] * v[2] - u[2] * v[1],
+        u[2] * v[0] - u[0] * v[2],
+        u[0] * v[1] - u[1] * v[0],
+      ]);
+      const towardCamera = nz > 0 ? -1 : 1;
+      const diffuse = Math.max(0, towardCamera * (-.42 * nx - .55 * ny - .72 * nz));
+      const rim = (1 - Math.abs(nz)) ** 3;
+      const reflection = diffuse ** 9;
+      const front = Math.max(0, -depth);
+      const red = Math.round(66 + 62 * diffuse + 35 * rim + 58 * reflection);
+      const green = Math.round(99 + 73 * diffuse + 42 * reflection);
+      const blue = Math.round(171 + 48 * diffuse + 21 * rim + 15 * reflection);
+      const opacity = .035 + .12 * diffuse + .15 * rim + .13 * reflection + .035 * front;
+      ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${opacity})`;
       ctx.fill();
     }
     const orbitPoint=project(rotate([1.64*Math.cos(spin*.7),1.64*Math.sin(spin*.7),0],1.12,.18,.2));
