@@ -38,35 +38,48 @@
 
   const projects = [...document.querySelectorAll('.project')];
   const filters = [...document.querySelectorAll('[data-filter]')];
-  filters.forEach(button => button.addEventListener('click', () => {
-    const filter = button.dataset.filter;
-    filters.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    projects.forEach(project => { project.hidden = filter !== 'all' && project.dataset.category !== filter; });
-    const count = projects.filter(project => !project.hidden).length;
-    document.getElementById('filter-status').textContent = `Showing ${count} ${filter === 'all' ? '' : filter === 'ml' ? 'machine learning ' : 'software '}project${count === 1 ? '' : 's'}`;
-    // Revealed items stay visible when category changes reflow the grid.
-    projects.filter(project => !project.hidden).forEach(project => project.classList.add('visible'));
-    updateProgress();
-  }));
+  filters.forEach(button => {
+    button.disabled = false;
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter;
+      filters.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      projects.forEach(project => { project.hidden = filter !== 'all' && project.dataset.category !== filter; });
+      const count = projects.filter(project => !project.hidden).length;
+      document.getElementById('filter-status').textContent = `Showing ${count} ${filter === 'all' ? '' : filter === 'ml' ? 'machine learning ' : 'software '}project${count === 1 ? '' : 's'}`;
+      // Revealed items stay visible when category changes reflow the grid.
+      projects.filter(project => !project.hidden).forEach(project => project.classList.add('visible'));
+      updateProgress();
+    });
+  });
 
   const dialog = document.getElementById('image-dialog');
   const dialogImage = document.getElementById('dialog-image');
   let imageOpener = null;
-  document.querySelectorAll('[data-image]').forEach(button => button.addEventListener('click', () => {
-    imageOpener = button;
-    dialogImage.src = button.dataset.image;
-    dialogImage.alt = button.querySelector('img').alt;
-    document.getElementById('dialog-title').textContent = button.dataset.title;
-    dialog.showModal();
-    document.documentElement.classList.add('scroll-lock');
-  }));
-  document.getElementById('close-dialog').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  dialog.addEventListener('close', () => {
-    document.documentElement.classList.remove('scroll-lock');
-    if (imageOpener) imageOpener.focus({ preventScroll: true });
-    dialogImage.removeAttribute('src');
-  });
+  if (typeof dialog.showModal === 'function') {
+    document.querySelectorAll('.image-button').forEach(link => {
+      link.setAttribute('aria-haspopup', 'dialog');
+      link.addEventListener('click', event => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        imageOpener = link;
+        dialogImage.src = link.href;
+        dialogImage.alt = link.querySelector('img').alt;
+        document.getElementById('dialog-title').textContent = link.dataset.title;
+        dialog.showModal();
+        document.documentElement.classList.add('scroll-lock');
+      });
+    });
+    document.getElementById('close-dialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      if (dialog.open) return;
+      document.documentElement.classList.remove('scroll-lock');
+      imageOpener.focus({ preventScroll: true });
+      dialogImage.removeAttribute('src');
+    });
+  }
 
   // A lightweight 3D renderer: projected meshes, depth-sorted translucent faces,
   // and orbital curves. No remote runtime, tracking, or WebGL dependency.
@@ -74,7 +87,12 @@
   const ctx = canvas.getContext('2d');
   const scene = document.getElementById('scene');
   const motion = document.getElementById('motion');
-  if (!ctx) { canvas.setAttribute('aria-label', 'Geometric illustration unavailable'); motion.disabled = true; return; }
+  const shapeButtons = [...document.querySelectorAll('[data-shape]')];
+  if (!ctx) {
+    canvas.setAttribute('aria-label', 'Geometric illustration unavailable');
+    document.getElementById('scene-hint').textContent = 'Geometric illustration unavailable';
+    return;
+  }
   const normalize = v => { const length = Math.hypot(...v); return v.map(n => n / length); };
   function coreMesh() {
     const t = (1 + Math.sqrt(5)) / 2;
@@ -109,7 +127,7 @@
   }
   const meshes = {core:coreMesh(),orbit:orbitMesh(),prism:prismMesh()};
   let shape='core',paused=reduced.matches,sceneVisible=true,frame=0,lastTime=0,spin=.45,width=0,height=0;
-  let rotationX=-.3,rotationY=.45,targetX=-.3,targetY=.45,dragging=false,startX=0,startY=0;
+  let rotationX=-.3,rotationY=.45,targetX=-.3,targetY=.45,activePointer=null,startX=0,startY=0;
   function rotate([x,y,z],rx,ry,rz=0) {
     let ay=y*Math.cos(rx)-z*Math.sin(rx),az=y*Math.sin(rx)+z*Math.cos(rx);
     let ax=x*Math.cos(ry)+az*Math.sin(ry);az=-x*Math.sin(ry)+az*Math.cos(ry);
@@ -151,15 +169,60 @@
   function canAnimate(){return !paused&&!reduced.matches&&sceneVisible&&!document.hidden;}
   function tick(now){frame=0;if(!canAnimate()){draw();return;}const delta=Math.min((now-lastTime)/1000,.05);lastTime=now;spin+=delta*.14;rotationX+=(targetX-rotationX)*.06;rotationY+=(targetY-rotationY)*.06;draw();frame=requestAnimationFrame(tick);}
   function start(){if(!frame&&canAnimate()){lastTime=performance.now();frame=requestAnimationFrame(tick);}else draw();}
-  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled · Choose a form to explore':'Move your pointer to explore · Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
+  function updateMotion(){scene.classList.toggle('paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.setAttribute('aria-label',paused||reduced.matches?'Resume 3D animation':'Pause 3D animation');motion.querySelector('span').textContent=paused||reduced.matches?'▷':'Ⅱ';motion.disabled=reduced.matches;document.getElementById('scene-hint').textContent=reduced.matches?'Reduced motion enabled · Choose a form to explore':'Drag to rotate';if(!canAnimate()&&frame){cancelAnimationFrame(frame);frame=0;}start();}
   motion.addEventListener('click',()=>{paused=!paused;updateMotion();});
-  document.querySelectorAll('[data-shape]').forEach(button=>button.addEventListener('click',()=>{shape=button.dataset.shape;document.querySelectorAll('[data-shape]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));canvas.setAttribute('aria-label',`Three-dimensional geometric ${shape}`);document.getElementById('shape-status').textContent=`${shape[0].toUpperCase()+shape.slice(1)} selected`;draw();}));
+  shapeButtons.forEach(button => {
+    button.disabled = false;
+    button.addEventListener('click', () => {
+      shape = button.dataset.shape;
+      shapeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      canvas.setAttribute('aria-label', `Three-dimensional geometric ${shape}`);
+      document.getElementById('shape-status').textContent = `${button.textContent} selected`;
+      draw();
+    });
+  });
   function resize(){const bounds=canvas.getBoundingClientRect();width=bounds.width;height=bounds.height;const dpr=Math.min(devicePixelRatio||1,1.75);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
   if('ResizeObserver'in window)new ResizeObserver(resize).observe(canvas);else addEventListener('resize',resize);
-  canvas.addEventListener('pointerdown',event=>{if(!finePointer.matches)return;dragging=true;startX=event.clientX;startY=event.clientY;canvas.setPointerCapture(event.pointerId);});
-  canvas.addEventListener('pointermove',event=>{if(!finePointer.matches||reduced.matches)return;const bounds=canvas.getBoundingClientRect();if(dragging){targetY+=(event.clientX-startX)*.009;targetX+=(event.clientY-startY)*.009;startX=event.clientX;startY=event.clientY;}else{targetX=-.3+(event.clientY-bounds.top-height/2)/height*.5;targetY=.45+(event.clientX-bounds.left-width/2)/width*.65;}if(paused){rotationX=targetX;rotationY=targetY;draw();}});
-  const endDrag=()=>{dragging=false;};canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);canvas.addEventListener('lostpointercapture',endDrag);
-  canvas.addEventListener('pointerleave',()=>{if(!dragging){targetX=-.3;targetY=.45;}});
+  canvas.addEventListener('pointerdown', event => {
+    if (reduced.matches || !event.isPrimary || event.button !== 0) return;
+    activePointer = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (reduced.matches || !width || !height) return;
+    if (activePointer !== null) {
+      if (event.pointerId !== activePointer) return;
+      targetY += (event.clientX - startX) * .009;
+      targetX += (event.clientY - startY) * .009;
+      startX = event.clientX;
+      startY = event.clientY;
+    } else {
+      if (!finePointer.matches || event.pointerType === 'touch') return;
+      const bounds = canvas.getBoundingClientRect();
+      targetX = -.3 + (event.clientY - bounds.top - height / 2) / height * .5;
+      targetY = .45 + (event.clientX - bounds.left - width / 2) / width * .65;
+    }
+    if (paused) {
+      rotationX = targetX;
+      rotationY = targetY;
+      draw();
+    }
+  });
+  function endDrag(event) {
+    if (event.pointerId !== activePointer) return;
+    activePointer = null;
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('lostpointercapture', endDrag);
+  canvas.addEventListener('pointerleave', () => {
+    if (activePointer === null && finePointer.matches) {
+      targetX = -.3;
+      targetY = .45;
+    }
+  });
   if('IntersectionObserver'in window){new IntersectionObserver(entries=>{sceneVisible=entries[0].isIntersecting;if(!sceneVisible&&frame){cancelAnimationFrame(frame);frame=0;}start();},{threshold:.01}).observe(scene);}
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&frame){cancelAnimationFrame(frame);frame=0;}start();});
   reduced.addEventListener('change',()=>{paused=reduced.matches;document.documentElement.classList.toggle('js-motion',!reduced.matches);reveals.forEach(element=>element.classList.add('visible'));updateMotion();});
